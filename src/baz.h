@@ -795,6 +795,12 @@ inline bool Span_starts_with(Span x, Span start) {
 }
 
 private
+inline bool Span_starts_with_str(Span x, const char *start) {
+  usize len = strlen(start);
+  return len <= x.len && memcmp(x.dat, start, len) == 0;
+}
+
+private
 inline Span Span_trim_start_whitespace(Span x) {
   usize offset = 0;
 

@@ -5,16 +5,6 @@ void solve(Span data) {
   u64 part1 = 0;
   u64 part2 = 0;
 
-  Span one = Span_from_str("one");
-  Span two = Span_from_str("two");
-  Span three = Span_from_str("three");
-  Span four = Span_from_str("four");
-  Span five = Span_from_str("five");
-  Span six = Span_from_str("six");
-  Span seven = Span_from_str("seven");
-  Span eight = Span_from_str("eight");
-  Span nine = Span_from_str("nine");
-
   SpanSplitIteratorNext line = SpanSplitIterator_next(&line_it);
   while (line.valid) {
     assert(line.dat.len >= 2);
@@ -31,23 +21,23 @@ void solve(Span data) {
       u8 c = line.dat.dat[i];
       u8 d = line.dat.dat[i];
 
-      if (Span_starts_with(from_here, one)) {
+      if (Span_starts_with_str(from_here, "one")) {
         d = '1';
-      } else if (Span_starts_with(from_here, two)) {
+      } else if (Span_starts_with_str(from_here, "two")) {
         d = '2';
-      } else if (Span_starts_with(from_here, three)) {
+      } else if (Span_starts_with_str(from_here, "three")) {
         d = '3';
-      } else if (Span_starts_with(from_here, four)) {
+      } else if (Span_starts_with_str(from_here, "four")) {
         d = '4';
-      } else if (Span_starts_with(from_here, five)) {
+      } else if (Span_starts_with_str(from_here, "five")) {
         d = '5';
-      } else if (Span_starts_with(from_here, six)) {
+      } else if (Span_starts_with_str(from_here, "six")) {
         d = '6';
-      } else if (Span_starts_with(from_here, seven)) {
+      } else if (Span_starts_with_str(from_here, "seven")) {
         d = '7';
-      } else if (Span_starts_with(from_here, eight)) {
+      } else if (Span_starts_with_str(from_here, "eight")) {
         d = '8';
-      } else if (Span_starts_with(from_here, nine)) {
+      } else if (Span_starts_with_str(from_here, "nine")) {
         d = '9';
       }
 
@@ -83,6 +73,8 @@ void solve(Span data) {
 
   String out = {0};
   String_push_u64(&out, part1, 10);
+  String_push_str(&out, " | ");
+  String_push_u64(&out, part2, 10);
   String_println(&out);
 }
 
