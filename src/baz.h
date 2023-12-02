@@ -9,17 +9,21 @@
 
 #define panic(msg)                                                             \
   do {                                                                         \
-    sys_write(STDERR, msg, strlen(msg));                                       \
+    print_msg_with_loc(__FILE__, __LINE__, msg, strlen(msg));                  \
     sys_exit(1);                                                               \
-    __builtin_unreachable();                                                   \
   } while (0)
 
 #define assert(cond)                                                           \
   do {                                                                         \
     if (unlikely(!(cond))) {                                                   \
-      ASSERT_PANIC(__FILE__, __LINE__);                                        \
+      char *msg = "Assertion failed";                                          \
+      print_msg_with_loc(__FILE__, __LINE__, msg, strlen(msg));                \
+      sys_exit(1);                                                             \
     }                                                                          \
   } while (0)
+
+#define Span_debug(span)                                                       \
+  print_msg_with_loc(__FILE__, __LINE__, (const char *)span.dat, span.len)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Types
@@ -239,7 +243,8 @@ usize strlen(const char *str) {
 
 // We implement this later with a better error message when we can format
 // __LINE__ properly
-static void ASSERT_PANIC(const char *file, u64 line);
+static void print_msg_with_loc(const char *file, u64 line, const char *msg,
+                               usize msg_len);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Printing/Parsing
@@ -351,19 +356,6 @@ i64 parse_i64(const u8 *buf, usize *buf_len, u8 base) {
     u64 x = parse_u64(buf, buf_len, base);
     return (i64)x;
   }
-}
-
-// Better error message now that we can format __LINE__ properly
-static void ASSERT_PANIC(const char *file, u64 line) {
-  const char *msg = "Assertion failed: ";
-  sys_write(STDERR, msg, strlen(msg));
-  sys_write(STDERR, file, strlen(file));
-  sys_write(STDERR, ":", 1);
-  u8 buf[256] = {0};
-  usize len = fmt_u64(buf, 256, line, 10);
-  sys_write(STDERR, buf, len);
-  sys_write(STDERR, "\n", 1);
-  sys_exit(1);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1189,6 +1181,23 @@ inline void String_printlnc(String *str) {
   String_push(str, '\n');
   String_print(str);
   String_clear(str);
+}
+
+// Better error message now that we can format __LINE__ properly
+static void print_msg_with_loc(const char *file, u64 line, const char *msg,
+                               usize msg_len) {
+  String out = {0};
+  String_push_str(&out, "\033[31;1;4m");
+  String_push_str(&out, file);
+  String_push_str(&out, ":");
+  String_push_u64(&out, line, 10);
+  String_push_str(&out, "\033[0m: ");
+  Span msg_span = {
+      .dat = (const u8 *)msg,
+      .len = msg_len,
+  };
+  String_push_span(&out, msg_span);
+  String_println(&out);
 }
 
 #endif // BAZ_HEADER
