@@ -6,16 +6,19 @@ CFLAGS = -g -O3 -std=c99 -march=skylake \
 day01: src/day01.c
 	$(CC) $(CFLAGS) src/day01.c -o day01
 
+day02: src/day02.c
+	$(CC) $(CFLAGS) src/day02.c -o day02
+
 .PHONY: all
-all: day01
+all: day01 day02
 
 .PHONY: run-all
 run-all: all
-	./day01
+	./day01; ./day02
 
 .PHONY: clean
 clean:
-	rm -f ./day01
+	rm -f ./day01 ./day02
 
 DAY?=day01
 
