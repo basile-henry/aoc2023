@@ -377,6 +377,13 @@ void putu64(u64 x) {
   sys_write(STDOUT, buf, len);
 }
 
+private
+void puti64(i64 x) {
+  u8 buf[128];
+  usize len = fmt_i64(buf, 128, x, 10);
+  sys_write(STDOUT, buf, len);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Int utils
 
