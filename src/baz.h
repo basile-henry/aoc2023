@@ -918,6 +918,8 @@ void SpanSplitIterator_skip(SpanSplitIterator *it, usize count) {
     V values[N];                                                               \
   } H_NAME;                                                                    \
                                                                                \
+  const usize H_NAME##_capacity = N;                                           \
+                                                                               \
 private                                                                        \
   usize H_NAME##_entry_ix(const H_NAME *hm, const K *key) {                    \
     Hash hash = K_HASH(key);                                                   \

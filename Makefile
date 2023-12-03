@@ -3,13 +3,16 @@ CFLAGS = -g -O3 -std=c99 -march=skylake \
 	-Wimplicit-fallthrough \
 	-Wall -Wextra -Wconversion -Werror
 
-DAYS = day01 day02
+DAYS = day01 day02 day03
 
 day01: src/day01.c
 	$(CC) $(CFLAGS) src/day01.c -o day01
 
 day02: src/day02.c
 	$(CC) $(CFLAGS) src/day02.c -o day02
+
+day03: src/day03.c
+	$(CC) $(CFLAGS) src/day03.c -o day03
 
 .PHONY: all
 all: $(DAYS)
