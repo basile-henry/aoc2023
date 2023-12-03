@@ -671,11 +671,10 @@ typedef struct {
 
 private
 Span Span_from_str(const char *str) {
-  Span ret = {
+  return (Span){
       .dat = (u8 *)str,
       .len = strlen(str),
   };
-  return ret;
 }
 
 // Load a file and get a Span to its content
@@ -692,11 +691,10 @@ Span Span_from_file(const char *path) {
   u8 *dat = (u8 *)sys_mmap(NULL, (usize)len, PROT_READ, MAP_PRIVATE, fd, 0);
   assert(dat != (void *)-1);
 
-  Span ret = {
+  return (Span){
       .dat = dat,
       .len = (usize)len,
   };
-  return ret;
 }
 
 private
@@ -729,15 +727,13 @@ Span Span_slice(Span x, usize from, usize to) {
   assert(to <= x.len);
 
   if (from == to) {
-    Span ret = {0};
-    return ret;
+    return (Span){0};
   }
 
-  Span ret = {
+  return (Span){
       .dat = x.dat + from,
       .len = to - from,
   };
-  return ret;
 }
 
 typedef Option(T2(u64, Span)) SpanParseU64;
@@ -747,13 +743,12 @@ SpanParseU64 Span_parse_u64(Span x, u8 base) {
   u64 res = parse_u64(x.dat, &len, base);
 
   if (len == 0) {
-    SpanParseU64 ret = {
+    return (SpanParseU64){
         .valid = false,
     };
-    return ret;
   }
 
-  SpanParseU64 ret = {
+  return (SpanParseU64){
       .dat =
           {
               .fst = res,
@@ -761,7 +756,6 @@ SpanParseU64 Span_parse_u64(Span x, u8 base) {
           },
       .valid = true,
   };
-  return ret;
 }
 
 typedef Option(T2(i64, Span)) SpanParseI64;
@@ -771,13 +765,12 @@ SpanParseI64 Span_parse_i64(Span x, u8 base) {
   i64 res = parse_i64(x.dat, &len, base);
 
   if (len == 0) {
-    SpanParseI64 ret = {
+    return (SpanParseI64){
         .valid = false,
     };
-    return ret;
   }
 
-  SpanParseI64 ret = {
+  return (SpanParseI64){
       .dat =
           {
               .fst = res,
@@ -785,7 +778,6 @@ SpanParseI64 Span_parse_i64(Span x, u8 base) {
           },
       .valid = true,
   };
-  return ret;
 }
 
 private
@@ -835,18 +827,17 @@ inline Span Span_trim_start(Span x, Span start) {
 typedef Option(T2(Span, Span)) SpanSplitOn;
 private
 SpanSplitOn Span_split_on(u8 byte, Span x) {
-  const u8 *match = memchr(x.dat, byte, x.len);
+  const u8 *match = (const u8 *)memchr(x.dat, byte, x.len);
   usize match_ix = (usize)(match - x.dat);
 
   if (match == NULL) {
-    SpanSplitOn ret = {
+    return (SpanSplitOn){
         .valid = false,
     };
-    return ret;
   } else {
     Span fst = Span_slice(x, 0, match_ix);
     Span snd = Span_slice(x, match_ix + 1, x.len);
-    SpanSplitOn ret = {
+    return (SpanSplitOn){
         .dat =
             {
                 .fst = fst,
@@ -854,7 +845,6 @@ SpanSplitOn Span_split_on(u8 byte, Span x) {
             },
         .valid = true,
     };
-    return ret;
   }
 }
 
@@ -865,30 +855,27 @@ typedef struct {
 
 private
 SpanSplitIterator Span_split_lines(Span x) {
-  SpanSplitIterator s = {
+  return (SpanSplitIterator){
       .rest = x,
       .sep = (u8)'\n',
   };
-  return s;
 }
 
 private
 SpanSplitIterator Span_split_words(Span x) {
-  SpanSplitIterator s = {
+  return (SpanSplitIterator){
       .rest = x,
       .sep = (u8)' ',
   };
-  return s;
 }
 
 typedef Option(Span) SpanSplitIteratorNext;
 private
 SpanSplitIteratorNext SpanSplitIterator_next(SpanSplitIterator *it) {
   if (it->rest.len == 0) {
-    SpanSplitIteratorNext ret = {
+    return (SpanSplitIteratorNext){
         .valid = false,
     };
-    return ret;
   }
 
   SpanSplitOn split = Span_split_on(it->sep, it->rest);
@@ -958,16 +945,14 @@ private                                                                        \
   H_NAME##Lookup H_NAME##_lookup(H_NAME *hm, const K *key) {                   \
     usize ix = H_NAME##_entry_ix(hm, key);                                     \
     if (hm->occupied[ix]) {                                                    \
-      H_NAME##Lookup ret = {                                                   \
+      return (H_NAME##Lookup){                                                 \
           .dat = &hm->values[ix],                                              \
           .valid = true,                                                       \
       };                                                                       \
-      return ret;                                                              \
     } else {                                                                   \
-      H_NAME##Lookup ret = {                                                   \
+      return (H_NAME##Lookup){                                                 \
           .valid = false,                                                      \
       };                                                                       \
-      return ret;                                                              \
     }                                                                          \
   }                                                                            \
                                                                                \
