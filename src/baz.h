@@ -16,7 +16,7 @@
 #define assert(cond)                                                           \
   do {                                                                         \
     if (unlikely(!(cond))) {                                                   \
-      char *msg = "Assertion failed";                                          \
+      const char *msg = "Assertion failed";                                    \
       print_msg_with_loc(__FILE__, __LINE__, msg, strlen(msg));                \
       sys_exit(1);                                                             \
     }                                                                          \
@@ -1176,6 +1176,51 @@ inline void String_printlnc(String *str) {
   String_print(str);
   String_clear(str);
 }
+
+// Make sure there are enough elements in argv!
+private
+void __printf(const char *fmt, const void **argv) {
+  String out = {0};
+  usize len = strlen(fmt);
+  usize arg_ix = 0;
+  for (usize i = 0; i < len; i++) {
+    if (fmt[i] == '%') {
+      i++;
+      assert(i < len);
+      switch (fmt[i]) {
+      case 's':
+        String_push_span(&out, *((Span *)argv[arg_ix]));
+        arg_ix++;
+        break;
+      case 'i':
+        String_push_i64(&out, *((i64 *)argv[arg_ix]), 10);
+        arg_ix++;
+        break;
+      case 'u':
+        String_push_u64(&out, *((u64 *)argv[arg_ix]), 10);
+        arg_ix++;
+        break;
+      case 'x':
+        String_push_u64(&out, *((u64 *)argv[arg_ix]), 16);
+        arg_ix++;
+        break;
+      case '%':
+        String_push(&out, '%');
+        break;
+      default:
+        panic("Unexpected printf fmt char");
+      }
+    } else {
+      String_push(&out, (u8)fmt[i]);
+    }
+  }
+
+  String_print(&out);
+}
+
+#define printf(fmt, X, ...)                                                    \
+  __printf(fmt,                                                                \
+           (const void *[]){(void *)&X __VA_OPT__(, (void *)&) __VA_ARGS__})
 
 // Better error message now that we can format __LINE__ properly
 static void print_msg_with_loc(const char *file, u64 line, const char *msg,
