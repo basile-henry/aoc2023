@@ -1218,9 +1218,10 @@ void __printf(const char *fmt, const void **argv) {
   String_print(&out);
 }
 
-#define printf(fmt, X, ...)                                                    \
-  __printf(fmt,                                                                \
-           (const void *[]){(void *)&X __VA_OPT__(, (void *)&) __VA_ARGS__})
+#define printf0(fmt) __printf(fmt)
+#define printf1(fmt, A) __printf(fmt, (const void *[]){ (const void *)&A });
+#define printf2(fmt, A, B) __printf(fmt, (const void *[]){ (const void *)&A, (const void *)&B });
+#define printf3(fmt, A, B, C) __printf(fmt, (const void *[]){ (const void *)&A, (const void *)&B, (const void *)&C });
 
 // Better error message now that we can format __LINE__ properly
 static void print_msg_with_loc(const char *file, u64 line, const char *msg,

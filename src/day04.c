@@ -53,7 +53,7 @@ static void solve(Span input) {
     ix++;
   }
 
-  printf("%u | %u\n", part1, part2);
+  printf2("%u | %u\n", part1, part2);
 }
 
 int main(void) {
