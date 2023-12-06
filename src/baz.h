@@ -737,7 +737,7 @@ Span Span_from_str(const char *str) {
 private
 Span Span_from_file(const char *path) {
   i32 fd = sys_open(path, O_RDONLY, 0);
-  assert(fd != -1);
+  assert_msg(fd > 0, "error opening file");
 
   isize len = sys_lseek(fd, 0, SEEK_END);
   assert(len >= 0);
