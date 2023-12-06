@@ -22,6 +22,14 @@
     }                                                                          \
   } while (0)
 
+#define assert_msg(cond, msg)                                                  \
+  do {                                                                         \
+    if (unlikely(!(cond))) {                                                   \
+      print_msg_with_loc(__FILE__, __LINE__, msg, strlen(msg));                \
+      sys_exit(1);                                                             \
+    }                                                                          \
+  } while (0)
+
 #define Span_debug(span)                                                       \
   print_msg_with_loc(__FILE__, __LINE__, (const char *)span.dat, span.len)
 
@@ -250,9 +258,6 @@ static void print_msg_with_loc(const char *file, u64 line, const char *msg,
 // Printing/Parsing
 
 private
-inline u8 to_upper(u8 x) { return x; } //  & ~((u8)1 << 6); }
-
-private
 inline u8 to_digit(u64 x, u8 base) {
   assert(base <= 36);
   assert(x < base);
@@ -260,7 +265,7 @@ inline u8 to_digit(u64 x, u8 base) {
   if (x < 10) {
     return (u8)x + '0';
   } else {
-    return (u8)x - 9 + 'a';
+    return (u8)x - 10 + 'A';
   }
 }
 
@@ -492,7 +497,7 @@ For example `define_array(WordsArray, Span, 32);` defines the new type
                                                                                \
 private                                                                        \
   T *A_NAME##_push(A_NAME *array, T x) {                                       \
-    assert(array->len < N);                                                    \
+    assert_msg(array->len < N, "push: max capacity");                          \
     T *slot = &array->dat[array->len];                                         \
     *slot = x;                                                                 \
     array->len += 1;                                                           \
@@ -1177,31 +1182,89 @@ inline void String_printlnc(String *str) {
   String_clear(str);
 }
 
-// Make sure there are enough elements in argv!
+typedef struct {
+  const void *arg;
+  usize size;
+} PrintfArg;
+
 private
-void __printf(const char *fmt, const void **argv) {
+void __printf(const char *fmt, usize argc, const PrintfArg *argv) {
   String out = {0};
   usize len = strlen(fmt);
   usize arg_ix = 0;
   for (usize i = 0; i < len; i++) {
     if (fmt[i] == '%') {
       i++;
-      assert(i < len);
+      assert_msg(i < len, "printf: fmt str too short");
+      assert_msg(arg_ix < argc, "printf: fmt string has too many args");
+      PrintfArg p_arg = argv[arg_ix];
+
       switch (fmt[i]) {
       case 's':
-        String_push_span(&out, *((Span *)argv[arg_ix]));
+        if (p_arg.size == sizeof(Span)) {
+          String_push_span(&out, *((Span *)p_arg.arg));
+        } else if (p_arg.size == sizeof(const char *)) {
+          String_push_str(&out, *((const char **)p_arg.arg));
+        } else {
+          panic("Unexpected arg for s");
+        }
         arg_ix++;
         break;
       case 'i':
-        String_push_i64(&out, *((i64 *)argv[arg_ix]), 10);
+        switch (p_arg.size) {
+        case 1:
+          String_push_i64(&out, (i64) * ((i8 *)p_arg.arg), 10);
+          break;
+        case 2:
+          String_push_i64(&out, (i64) * ((i16 *)p_arg.arg), 10);
+          break;
+        case 4:
+          String_push_i64(&out, (i64) * ((i32 *)p_arg.arg), 10);
+          break;
+        case 8:
+          String_push_i64(&out, *((i64 *)p_arg.arg), 10);
+          break;
+        default:
+          panic("Unexpected arg size");
+        }
         arg_ix++;
         break;
       case 'u':
-        String_push_u64(&out, *((u64 *)argv[arg_ix]), 10);
+        switch (p_arg.size) {
+        case 1:
+          String_push_u64(&out, (u64) * ((u8 *)p_arg.arg), 10);
+          break;
+        case 2:
+          String_push_u64(&out, (u64) * ((u16 *)p_arg.arg), 10);
+          break;
+        case 4:
+          String_push_u64(&out, (u64) * ((u32 *)p_arg.arg), 10);
+          break;
+        case 8:
+          String_push_u64(&out, *((u64 *)p_arg.arg), 10);
+          break;
+        default:
+          panic("Unexpected arg size");
+        }
         arg_ix++;
         break;
       case 'x':
-        String_push_u64(&out, *((u64 *)argv[arg_ix]), 16);
+        switch (p_arg.size) {
+        case 1:
+          String_push_u64(&out, (u64) * ((u8 *)p_arg.arg), 16);
+          break;
+        case 2:
+          String_push_u64(&out, (u64) * ((u16 *)p_arg.arg), 16);
+          break;
+        case 4:
+          String_push_u64(&out, (u64) * ((u32 *)p_arg.arg), 16);
+          break;
+        case 8:
+          String_push_u64(&out, *((u64 *)p_arg.arg), 16);
+          break;
+        default:
+          panic("Unexpected arg size");
+        }
         arg_ix++;
         break;
       case '%':
@@ -1218,26 +1281,43 @@ void __printf(const char *fmt, const void **argv) {
   String_print(&out);
 }
 
-#define printf0(fmt) __printf(fmt)
-#define printf1(fmt, A) __printf(fmt, (const void *[]){ (const void *)&A });
-#define printf2(fmt, A, B) __printf(fmt, (const void *[]){ (const void *)&A, (const void *)&B });
-#define printf3(fmt, A, B, C) __printf(fmt, (const void *[]){ (const void *)&A, (const void *)&B, (const void *)&C });
+#define printf0(fmt) __printf(fmt, 0, NULL);
+#define printf1(fmt, A)                                                        \
+  ({                                                                           \
+    __auto_type a = A;                                                         \
+    __printf(fmt, 1,                                                           \
+             (PrintfArg[]){                                                    \
+                 (PrintfArg){.arg = (const void *)&a, .size = sizeof(a)}});    \
+  })
+#define printf2(fmt, A, B)                                                     \
+  ({                                                                           \
+    __auto_type a = A;                                                         \
+    __auto_type b = B;                                                         \
+    __printf(fmt, 2,                                                           \
+             (PrintfArg[]){                                                    \
+                 (PrintfArg){.arg = (const void *)&a, .size = sizeof(a)},      \
+                 (PrintfArg){.arg = (const void *)&b, .size = sizeof(b)}});    \
+  })
+#define printf3(fmt, A, B, C)                                                  \
+  ({                                                                           \
+    __auto_type a = A;                                                         \
+    __auto_type b = B;                                                         \
+    __auto_type c = C;                                                         \
+    __printf(fmt, 3,                                                           \
+             (PrintfArg[]){                                                    \
+                 (PrintfArg){.arg = (const void *)&a, .size = sizeof(a)},      \
+                 (PrintfArg){.arg = (const void *)&b, .size = sizeof(b)},      \
+                 (PrintfArg){.arg = (const void *)&c, .size = sizeof(c)}});    \
+  })
 
 // Better error message now that we can format __LINE__ properly
 static void print_msg_with_loc(const char *file, u64 line, const char *msg,
                                usize msg_len) {
-  String out = {0};
-  String_push_str(&out, "\033[31;1;4m");
-  String_push_str(&out, file);
-  String_push_str(&out, ":");
-  String_push_u64(&out, line, 10);
-  String_push_str(&out, "\033[0m: ");
   Span msg_span = {
       .dat = (const u8 *)msg,
       .len = msg_len,
   };
-  String_push_span(&out, msg_span);
-  String_println(&out);
+  printf3("\033[31;1;4m%s:%u\033[0m: %s\n", file, line, msg_span);
 }
 
 #endif // BAZ_HEADER
