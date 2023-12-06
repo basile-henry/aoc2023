@@ -152,7 +152,15 @@ void sys_exit(i32 exit_status) {
 
 int main(void);
 
+static usize _start_argc;
+static char const *const *_start_argv;
+
 __attribute__((force_align_arg_pointer)) void _start() {
+  // Not sure why the extra offsets, it looks like both GCC and Clang push a
+  // couple values to the stack before getting here. I hope it's reliable
+  __asm__ __volatile__("mov 16(%%rsp), %0" : "=r"(_start_argc)::);
+  __asm__ __volatile__("lea 24(%%rsp), %0" : "=r"(_start_argv)::);
+
   int ret = main();
   sys_exit(ret);
 }
