@@ -504,6 +504,47 @@ private                                                                        \
     return slot;                                                               \
   }                                                                            \
                                                                                \
+private                                                                        \
+  T *A_NAME##_insert(A_NAME *array, usize ix, T x) {                           \
+    assert_msg(array->len < N, "insert: max_capacity");                        \
+    assert_msg(ix <= array->len, "insert: ix out of bound");                   \
+                                                                               \
+    array->len += 1;                                                           \
+    for (usize i = ix; i < array->len; i++) {                                  \
+      T t = array->dat[i];                                                     \
+      array->dat[i] = x;                                                       \
+      x = t;                                                                   \
+    }                                                                          \
+    return &array->dat[ix];                                                    \
+  }                                                                            \
+                                                                               \
+  /* Assumes a sorted array */                                                 \
+private                                                                        \
+  usize A_NAME##_bsearch(const A_NAME *array, const T *entry,                  \
+                         int cmp(const T *a, const T *b)) {                    \
+    usize len = array->len;                                                    \
+    usize ix = 0;                                                              \
+                                                                               \
+    while (len > 0) {                                                          \
+      len = len >> 1;                                                          \
+      usize mid = ix + len;                                                    \
+      if (mid >= array->len) {                                                 \
+        /* left */                                                             \
+        continue;                                                              \
+      }                                                                        \
+                                                                               \
+      int c = cmp(entry, &array->dat[mid]);                                    \
+      if (c == 0) {                                                            \
+        return mid;                                                            \
+      } else if (c > 0) {                                                      \
+        /* right */                                                            \
+        ix = mid + 1;                                                          \
+      }                                                                        \
+    }                                                                          \
+                                                                               \
+    return ix;                                                                 \
+  }                                                                            \
+                                                                               \
   typedef Option(T) A_NAME##Pop;                                               \
 private                                                                        \
   A_NAME##Pop A_NAME##_pop(A_NAME *array) {                                    \

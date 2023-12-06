@@ -3,7 +3,7 @@ CFLAGS = -g -O3 -std=c99 -march=skylake \
 	-Wimplicit-fallthrough \
 	-Wall -Wextra -Wconversion -Werror
 
-DAYS = day01 day02 day03 day04
+DAYS = day01 day02 day03 day04 day05
 
 day01: src/day01.c
 	$(CC) $(CFLAGS) src/day01.c -o day01
@@ -17,6 +17,12 @@ day03: src/day03.c
 day04: src/day04.c
 	$(CC) $(CFLAGS) src/day04.c -o day04
 
+day05: src/day05.c
+	$(CC) $(CFLAGS) src/day05.c -o day05
+
+test: src/test.c
+	$(CC) $(CFLAGS) src/test.c -o test
+
 .PHONY: all
 all: $(DAYS)
 
@@ -26,7 +32,7 @@ run-all: all
 
 .PHONY: clean
 clean:
-	@for day in $(DAYS); do rm -f ./$$day ; done
+	@for day in test $(DAYS); do rm -f ./$$day ; done
 
 DAY?=day01
 
