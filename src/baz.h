@@ -479,9 +479,9 @@ int u8_cmp(const u8 *a, const u8 *b) { return *a < *b ? -1 : *a == *b ? 0 : 1; }
 
 #define UNWRAP(E)                                                              \
   ({                                                                           \
-    __auto_type res = E;                                                       \
-    assert(res.valid);                                                         \
-    res.dat;                                                                   \
+    __auto_type UNWRAP_res = E;                                                \
+    assert(UNWRAP_res.valid);                                                  \
+    UNWRAP_res.dat;                                                            \
   })
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1333,30 +1333,33 @@ void __printf(const char *fmt, usize argc, const PrintfArg *argv) {
 #define printf0(fmt) __printf(fmt, 0, NULL);
 #define printf1(fmt, A)                                                        \
   ({                                                                           \
-    __auto_type a = A;                                                         \
+    __auto_type PRINTF_a = A;                                                  \
     __printf(fmt, 1,                                                           \
-             (PrintfArg[]){                                                    \
-                 (PrintfArg){.arg = (const void *)&a, .size = sizeof(a)}});    \
+             (PrintfArg[]){(PrintfArg){.arg = (const void *)&PRINTF_a,         \
+                                       .size = sizeof(PRINTF_a)}});            \
   })
 #define printf2(fmt, A, B)                                                     \
   ({                                                                           \
-    __auto_type a = A;                                                         \
-    __auto_type b = B;                                                         \
+    __auto_type PRINTF_a = A;                                                  \
+    __auto_type PRINTF_b = B;                                                  \
     __printf(fmt, 2,                                                           \
-             (PrintfArg[]){                                                    \
-                 (PrintfArg){.arg = (const void *)&a, .size = sizeof(a)},      \
-                 (PrintfArg){.arg = (const void *)&b, .size = sizeof(b)}});    \
+             (PrintfArg[]){(PrintfArg){.arg = (const void *)&PRINTF_a,         \
+                                       .size = sizeof(PRINTF_a)},              \
+                           (PrintfArg){.arg = (const void *)&PRINTF_b,         \
+                                       .size = sizeof(PRINTF_b)}});            \
   })
 #define printf3(fmt, A, B, C)                                                  \
   ({                                                                           \
-    __auto_type a = A;                                                         \
-    __auto_type b = B;                                                         \
-    __auto_type c = C;                                                         \
+    __auto_type PRINTF_a = A;                                                  \
+    __auto_type PRINTF_b = B;                                                  \
+    __auto_type PRINTF_c = C;                                                  \
     __printf(fmt, 3,                                                           \
-             (PrintfArg[]){                                                    \
-                 (PrintfArg){.arg = (const void *)&a, .size = sizeof(a)},      \
-                 (PrintfArg){.arg = (const void *)&b, .size = sizeof(b)},      \
-                 (PrintfArg){.arg = (const void *)&c, .size = sizeof(c)}});    \
+             (PrintfArg[]){(PrintfArg){.arg = (const void *)&PRINTF_a,         \
+                                       .size = sizeof(PRINTF_a)},              \
+                           (PrintfArg){.arg = (const void *)&PRINTF_b,         \
+                                       .size = sizeof(PRINTF_b)},              \
+                           (PrintfArg){.arg = (const void *)&PRINTF_c,         \
+                                       .size = sizeof(PRINTF_c)}});            \
   })
 
 // Better error message now that we can format __LINE__ properly
