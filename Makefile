@@ -3,7 +3,7 @@ CFLAGS = -g -O3 -std=c99 -march=skylake \
 	-Wimplicit-fallthrough \
 	-Wall -Wextra -Wconversion -Werror
 
-DAYS = day01 day02 day03 day04 day05 day06 day07 day08 day09
+DAYS = day01 day02 day03 day04 day05 day06 day07 day08 day09 day10
 
 day01: src/day01.c
 	$(CC) $(CFLAGS) src/day01.c -o day01
@@ -31,6 +31,9 @@ day08: src/day08.c
 
 day09: src/day09.c
 	$(CC) $(CFLAGS) src/day09.c -o day09
+
+day10: src/day10.c
+	$(CC) $(CFLAGS) src/day10.c -o day10
 
 test: src/test.c
 	$(CC) $(CFLAGS) src/test.c -o test
