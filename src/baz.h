@@ -1118,6 +1118,15 @@ private                                                                        \
   }                                                                            \
                                                                                \
 private                                                                        \
+  void B_NAME##_set_many(B_NAME *bs, usize x) {                                \
+    assert(x / T##_bits < N);                                                  \
+    bs->dat[x / T##_bits] |= (((T)1) << (x % T##_bits)) - 1;                   \
+    for (usize i = 0; i < x / T##_bits; i++) {                                 \
+      bs->dat[i] = ~((T)0);                                                    \
+    }                                                                          \
+  }                                                                            \
+                                                                               \
+private                                                                        \
   inline bool B_NAME##_contains(B_NAME bs, usize x) {                          \
     assert(x / T##_bits < N);                                                  \
     return (bool)((bs.dat[x / T##_bits] >> (x % T##_bits)) & 1);               \
