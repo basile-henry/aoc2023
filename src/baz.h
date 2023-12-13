@@ -1187,7 +1187,7 @@ private                                                                        \
 define_array(String, u8, 256);
 
 private
-void String_clear(String *str) { str->len = 0; }
+inline void String_clear(String *str) { str->len = 0; }
 
 private
 void String_push_str(String *str, const char *s) {
@@ -1263,6 +1263,9 @@ void __printf(const char *fmt, usize argc, const PrintfArg *argv) {
           String_push_span(&out, *((Span *)p_arg.arg));
         } else if (p_arg.size == sizeof(const char *)) {
           String_push_str(&out, *((const char **)p_arg.arg));
+        } else if (p_arg.size == sizeof(String)) {
+          String x = *((String *)p_arg.arg);
+          String_push_span(&out, (Span){.dat = x.dat, .len = x.len});
         } else {
           panic("Unexpected arg for s");
         }
@@ -1368,6 +1371,22 @@ void __printf(const char *fmt, usize argc, const PrintfArg *argv) {
                            (PrintfArg){.arg = (const void *)&PRINTF_b,         \
                                        .size = sizeof(PRINTF_b)},              \
                            (PrintfArg){.arg = (const void *)&PRINTF_c,         \
+                                       .size = sizeof(PRINTF_c)}});            \
+  })
+#define printf4(fmt, A, B, C, D)                                               \
+  ({                                                                           \
+    __auto_type PRINTF_a = A;                                                  \
+    __auto_type PRINTF_b = B;                                                  \
+    __auto_type PRINTF_c = C;                                                  \
+    __auto_type PRINTF_d = D;                                                  \
+    __printf(fmt, 4,                                                           \
+             (PrintfArg[]){(PrintfArg){.arg = (const void *)&PRINTF_a,         \
+                                       .size = sizeof(PRINTF_a)},              \
+                           (PrintfArg){.arg = (const void *)&PRINTF_b,         \
+                                       .size = sizeof(PRINTF_b)},              \
+                           (PrintfArg){.arg = (const void *)&PRINTF_c,         \
+                                       .size = sizeof(PRINTF_c)},              \
+                           (PrintfArg){.arg = (const void *)&PRINTF_d,         \
                                        .size = sizeof(PRINTF_c)}});            \
   })
 
