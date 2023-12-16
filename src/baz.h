@@ -11,6 +11,7 @@
   do {                                                                         \
     print_msg_with_loc(__FILE__, __LINE__, msg, strlen(msg));                  \
     sys_exit(1);                                                               \
+    __builtin_unreachable();                                                   \
   } while (0)
 
 #define assert(cond)                                                           \
