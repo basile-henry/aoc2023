@@ -590,6 +590,23 @@ private                                                                        \
     return ret;                                                                \
   }                                                                            \
                                                                                \
+  typedef Option(usize) A_NAME##Lookup;                                        \
+private                                                                        \
+  A_NAME##Lookup A_NAME##_linear_lookup(const A_NAME *array, const T *entry,   \
+                                        bool eq(const T *a, const T *b)) {     \
+    for (usize i = 0; i < array->len; i++) {                                   \
+      if (eq(&array->dat[i], entry)) {                                         \
+        return (A_NAME##Lookup){                                               \
+            .valid = true,                                                     \
+            .dat = i,                                                          \
+        };                                                                     \
+      }                                                                        \
+    }                                                                          \
+    return (A_NAME##Lookup){                                                   \
+        .valid = false,                                                        \
+    };                                                                         \
+  }                                                                            \
+                                                                               \
   void REQUIRE_SEMICOLON()
 
 ////////////////////////////////////////////////////////////////////////////////
