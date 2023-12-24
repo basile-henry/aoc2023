@@ -607,6 +607,15 @@ private                                                                        \
     };                                                                         \
   }                                                                            \
                                                                                \
+private                                                                        \
+  void A_NAME##_remove(A_NAME *array, usize ix) {                              \
+    assert(ix < array->len);                                                   \
+    for (usize i = ix; i < array->len - 1; i++) {                              \
+      array->dat[i] = array->dat[i + 1];                                       \
+    }                                                                          \
+    array->len--;                                                              \
+  }                                                                            \
+                                                                               \
   void REQUIRE_SEMICOLON()
 
 ////////////////////////////////////////////////////////////////////////////////
