@@ -296,9 +296,9 @@ inline u64 from_digit(u8 x, u8 base) {
   if (x <= '9') {
     return (u64)(x - '0');
   } else if (x <= 'Z') {
-    return (u64)(x - 'A');
+    return (u64)(10 + x - 'A');
   } else {
-    return (u64)(x - 'a');
+    return (u64)(10 + x - 'a');
   }
 }
 
