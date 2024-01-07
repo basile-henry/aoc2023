@@ -1285,6 +1285,11 @@ void __printf(const char *fmt, usize argc, const PrintfArg *argv) {
       PrintfArg p_arg = argv[arg_ix];
 
       switch (fmt[i]) {
+      case 'c':
+        assert(p_arg.size == sizeof(u8));
+        String_push(&out, *((u8 *)p_arg.arg));
+        arg_ix++;
+        break;
       case 's':
         if (p_arg.size == sizeof(Span)) {
           String_push_span(&out, *((Span *)p_arg.arg));
